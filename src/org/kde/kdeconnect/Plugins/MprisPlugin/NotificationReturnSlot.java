@@ -23,52 +23,90 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import org.kde.kdeconnect.BackgroundService;
 import org.kde.kdeconnect.Device;
 
 public class NotificationReturnSlot extends BroadcastReceiver {
 
+    Context context;
+    String deviceId;
+    String player;
+
+    String TAG = "NotificationReturn";
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        String action = intent.getStringExtra("action");
-        final String deviceId = intent.getStringExtra("deviceId");
-        final String player = intent.getStringExtra("player");
+        Log.d(TAG, "NIDSO{");
+        deviceId = intent.getStringExtra("deviceId");
+        player = intent.getStringExtra("player");
+        this.context=context;
 
-        //Log.e("onReceive",""+deviceId+player);
-        if (action.equals("play")) {
-            BackgroundService.RunCommand(context, new BackgroundService.InstanceCallback() {
-                @Override
-                public void onServiceStart(BackgroundService service) {
-                    Device device = service.getDevice(deviceId);
-                    MprisPlugin mpris = (MprisPlugin) device.getPlugin("plugin_mpris");
-                    if (mpris == null) return;
-                    mpris.setPlayer(player);
-                    mpris.sendAction("PlayPause");
+        Log.d(TAG, deviceId+" "+player);
+        //If onReceive is called because of RemoteControlClient...
+        if(intent.getAction() == Intent.ACTION_MEDIA_BUTTON) {
+            //The event will fire twice, up and down.
+            // we only want to handle the down event though.
+            KeyEvent key = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+            if (key.getAction() == KeyEvent.ACTION_DOWN) {
+                Log.d(TAG, String.valueOf(key.getKeyCode()));
+                switch (key.getKeyCode()) {
+                    case KeyEvent.KEYCODE_HEADSETHOOK:
+                    case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                        play();
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_PLAY:
+                        play();
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                        play();
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_STOP:
+                        play();
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_NEXT:
+                        next();
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                        prev();
+                        break;
+                    default:
+                        return;
                 }
-            });
-        } else if (action.equals("next")) {
-            BackgroundService.RunCommand(context, new BackgroundService.InstanceCallback() {
-                @Override
-                public void onServiceStart(BackgroundService service) {
-                    Device device = service.getDevice(deviceId);
-                    MprisPlugin mpris = (MprisPlugin) device.getPlugin("plugin_mpris");
-                    if (mpris == null) return;
-                    mpris.setPlayer(player);
-                    mpris.sendAction("Next");
-                }
-            });
-        }else if(action.equals("prev")){
-            BackgroundService.RunCommand(context, new BackgroundService.InstanceCallback() {
-                @Override
-                public void onServiceStart(BackgroundService service) {
-                    Device device = service.getDevice(deviceId);
-                    MprisPlugin mpris = (MprisPlugin) device.getPlugin("plugin_mpris");
-                    if (mpris == null) return;
-                    mpris.setPlayer(player);
-                    mpris.sendAction("Previous");
-                }
-            });
+            }
+        }else {
+            //Not from RemoteControlClient, from NotificationPanel
+            String action = intent.getStringExtra("action");
+            if (action.equals("play")) {
+                play();
+            } else if (action.equals("next")) {
+                next();
+            } else if (action.equals("prev")) {
+                prev();
+            }
         }
+    }
+
+    public void play(){
+        musicCommand("PlayPause");
+    }
+    public void next(){
+        musicCommand("Next");
+    }
+    public void prev(){
+        musicCommand("Previous");
+    }
+    private void musicCommand(final String cmd){
+        BackgroundService.RunCommand(context, new BackgroundService.InstanceCallback() {
+            @Override
+            public void onServiceStart(BackgroundService service) {
+                Device device = service.getDevice(deviceId);
+                MprisPlugin mpris = (MprisPlugin) device.getPlugin("plugin_mpris");
+                if (mpris == null) return;
+                mpris.setPlayer(player);
+                mpris.sendAction(cmd);
+            }
+        });
     }
 }
