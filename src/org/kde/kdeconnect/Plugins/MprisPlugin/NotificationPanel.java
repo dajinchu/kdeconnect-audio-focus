@@ -43,6 +43,7 @@ public class NotificationPanel {
 
     private static final int notificationId = 182144338; //Random number, fixed id to make sure we don't produce more than one notification
     private final AudioManager audioManager;
+    private final RemoteControlClient remoteControlClient;
 
     private String deviceId;
     private String player;
@@ -85,16 +86,17 @@ public class NotificationPanel {
         Log.d("Panel", deviceId + " " + player);
         mediaButtonIntent.putExtra("ID", deviceId);
         mediaButtonIntent.putExtra("PLAYER", player);
+        Log.d("Panel", mediaButtonIntent.getStringExtra("ID") + " " + mediaButtonIntent.getStringExtra("PLAYER"));
         mediaButtonIntent.setComponent(eventReceiver);
         PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, NotificationsHelper.getUniqueId(), mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        RemoteControlClient remoteControlClient = new RemoteControlClient(mediaPendingIntent);
+        remoteControlClient = new RemoteControlClient(mediaPendingIntent);
+        remoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
+                        | RemoteControlClient.FLAG_KEY_MEDIA_NEXT
+                        | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
+                        | RemoteControlClient.FLAG_KEY_MEDIA_PLAY
+                        | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE
+                        );
         audioManager.registerRemoteControlClient(remoteControlClient);
-        remoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY |
-                RemoteControlClient.FLAG_KEY_MEDIA_PAUSE |
-                RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE |
-                RemoteControlClient.FLAG_KEY_MEDIA_STOP |
-                RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS |
-                RemoteControlClient.FLAG_KEY_MEDIA_NEXT);
         RemoteControlClient.MetadataEditor metadataEditor = remoteControlClient.editMetadata(true);
         metadataEditor.putString(MediaMetadataRetriever.METADATA_KEY_ALBUM, "Fantastique");
         metadataEditor.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, "Raw Stiles");
@@ -155,8 +157,10 @@ public class NotificationPanel {
                 }
             };
             audioManager.requestAudioFocus(listener,AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             remoteView.setImageViewResource(R.id.notification_play_pause, android.R.drawable.ic_media_pause);
         } else {
+            remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
             audioManager.abandonAudioFocus(listener);
             remoteView.setImageViewResource(R.id.notification_play_pause, android.R.drawable.ic_media_play);
         }
