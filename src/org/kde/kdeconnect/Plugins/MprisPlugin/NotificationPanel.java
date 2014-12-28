@@ -83,8 +83,8 @@ public class NotificationPanel {
         audioManager.registerMediaButtonEventReceiver(eventReceiver);
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         Log.d("Panel", deviceId + " " + player);
-        mediaButtonIntent.putExtra("deviceId", deviceId);
-        mediaButtonIntent.putExtra("player", player);
+        mediaButtonIntent.putExtra("ID", deviceId);
+        mediaButtonIntent.putExtra("PLAYER", player);
         mediaButtonIntent.setComponent(eventReceiver);
         PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, NotificationsHelper.getUniqueId(), mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         RemoteControlClient remoteControlClient = new RemoteControlClient(mediaPendingIntent);
@@ -147,6 +147,7 @@ public class NotificationPanel {
         if (remoteView == null) return;
         remoteView.setTextViewText(R.id.notification_song, songName);
         if (isPlaying) {
+            Log.d("Panel", "Playing");
             listener = new AudioManager.OnAudioFocusChangeListener() {
                 @Override
                 public void onAudioFocusChange(int focusChange) {

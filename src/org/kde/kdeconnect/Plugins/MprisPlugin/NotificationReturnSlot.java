@@ -38,16 +38,16 @@ public class NotificationReturnSlot extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "NIDSO{");
-        deviceId = intent.getStringExtra("deviceId");
-        player = intent.getStringExtra("player");
+        Log.d(TAG, "N IDSO{");
         this.context=context;
 
-        Log.d(TAG, deviceId+" "+player);
         //If onReceive is called because of RemoteControlClient...
         if(intent.getAction() == Intent.ACTION_MEDIA_BUTTON) {
             //The event will fire twice, up and down.
             // we only want to handle the down event though.
+            deviceId = intent.getStringExtra("ID");
+            player = intent.getStringExtra("PLAYER");
+            Log.d(TAG, deviceId+" "+player);
             KeyEvent key = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
             if (key.getAction() == KeyEvent.ACTION_DOWN) {
                 Log.d(TAG, String.valueOf(key.getKeyCode()));
@@ -77,6 +77,8 @@ public class NotificationReturnSlot extends BroadcastReceiver {
             }
         }else {
             //Not from RemoteControlClient, from NotificationPanel
+            deviceId = intent.getStringExtra("deviceId");
+            player = intent.getStringExtra("player");
             String action = intent.getStringExtra("action");
             if (action.equals("play")) {
                 play();
