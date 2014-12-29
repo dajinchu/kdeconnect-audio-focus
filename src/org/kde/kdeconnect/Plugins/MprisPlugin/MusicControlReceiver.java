@@ -28,7 +28,7 @@ import android.view.KeyEvent;
 import org.kde.kdeconnect.BackgroundService;
 import org.kde.kdeconnect.Device;
 
-public class NotificationReturnSlot extends BroadcastReceiver {
+public class MusicControlReceiver extends BroadcastReceiver {
 
     Context context;
     String deviceId;

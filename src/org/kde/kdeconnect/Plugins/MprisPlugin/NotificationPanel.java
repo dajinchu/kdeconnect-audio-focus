@@ -86,21 +86,21 @@ public class NotificationPanel {
         String playerOnDevice = context.getString(R.string.mpris_player_on_device, player, deviceName);
         remoteView.setTextViewText(R.id.notification_player, playerOnDevice);
 
-        Intent playpause = new Intent(context, NotificationReturnSlot.class);
+        Intent playpause = new Intent(context, MusicControlReceiver.class);
         playpause.putExtra("action", "play");
         playpause.putExtra("deviceId", deviceId);
         playpause.putExtra("player", player);
         PendingIntent btn1 = PendingIntent.getBroadcast(context, NotificationsHelper.getUniqueId(), playpause, 0);
         remoteView.setOnClickPendingIntent(R.id.notification_play_pause, btn1);
 
-        Intent next = new Intent(context, NotificationReturnSlot.class);
+        Intent next = new Intent(context, MusicControlReceiver.class);
         next.putExtra("action", "next");
         next.putExtra("deviceId", deviceId);
         next.putExtra("player", player);
         PendingIntent btn2 = PendingIntent.getBroadcast(context, NotificationsHelper.getUniqueId(), next, 0);
         remoteView.setOnClickPendingIntent(R.id.notification_next, btn2);
 
-        Intent prev = new Intent(context, NotificationReturnSlot.class);
+        Intent prev = new Intent(context, MusicControlReceiver.class);
         prev.putExtra("action", "prev");
         prev.putExtra("deviceId", deviceId);
         prev.putExtra("player", player);

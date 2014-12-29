@@ -27,7 +27,6 @@ public class RemoteControlClientManager {
     private ComponentName eventReceiver;
     private RemoteControlClient remoteControlClient;
     private AudioManager audioManager;
-    private AudioManager.OnAudioFocusChangeListener focusListener;
     private String song;
 
     public RemoteControlClientManager(Context context, Device device, String player){
@@ -37,14 +36,6 @@ public class RemoteControlClientManager {
 
         audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
 
-        focusListener = new AudioManager.OnAudioFocusChangeListener() {
-            @Override
-            public void onAudioFocusChange(int focusChange) {
-
-            }
-        };
-
-        //TODO: NotificationPanel and RemoteControlClientManager are nearly the same, they are separated for clarity put them back together when a good name is found
         final MprisPlugin mpris = (MprisPlugin)device.getPlugin("plugin_mpris");
         if (mpris != null) {
             mpris.setPlayerStatusUpdatedHandler("remoteclient", new Handler() {
@@ -58,7 +49,7 @@ public class RemoteControlClientManager {
         }
     }
     private void registerRemoteClient(){
-        eventReceiver = new ComponentName(context.getPackageName(), NotificationReturnSlot.class.getName());
+        eventReceiver = new ComponentName(context.getPackageName(), MusicControlReceiver.class.getName());
         if(remoteControlClient==null) {
             audioManager.registerMediaButtonEventReceiver(eventReceiver);
             Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
@@ -96,14 +87,11 @@ public class RemoteControlClientManager {
     public void updateStatus(String songName, boolean isPlaying){
         song = songName;
         if(isPlaying){
-            audioManager.requestAudioFocus(focusListener,AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             registerRemoteClient();
             if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             updateMetadata();
-        }else{
-            audioManager.abandonAudioFocus(focusListener);
-            if(remoteControlClient!=null)
+        }else{if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
         }
     }
