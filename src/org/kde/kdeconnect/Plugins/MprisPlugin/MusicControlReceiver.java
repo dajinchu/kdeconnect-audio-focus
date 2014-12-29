@@ -22,7 +22,6 @@ package org.kde.kdeconnect.Plugins.MprisPlugin;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import org.kde.kdeconnect.BackgroundService;
@@ -34,23 +33,19 @@ public class MusicControlReceiver extends BroadcastReceiver {
     String deviceId;
     String player;
 
-    String TAG = "NotificationReturn";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "N IDSO{"+context);
         this.context=context;
+        deviceId = intent.getStringExtra("deviceId");
+        player = intent.getStringExtra("player");
 
         //If onReceive is called because of RemoteControlClient...
         if(intent.getAction()==Intent.ACTION_MEDIA_BUTTON) {
             //The event will fire twice, up and down.
             // we only want to handle the down event though.
-            deviceId = intent.getStringExtra("ID");
-            player = intent.getStringExtra("PLAYER");
-            Log.d(TAG, deviceId+" "+player);
             KeyEvent key = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
             if (key.getAction()==KeyEvent.ACTION_DOWN) {
-                Log.d(TAG, String.valueOf(key.getKeyCode()));
                 switch (key.getKeyCode()) {
                     case KeyEvent.KEYCODE_HEADSETHOOK:
                     case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
@@ -60,9 +55,6 @@ public class MusicControlReceiver extends BroadcastReceiver {
                         play();
                         break;
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        play();
-                        break;
-                    case KeyEvent.KEYCODE_MEDIA_STOP:
                         play();
                         break;
                     case KeyEvent.KEYCODE_MEDIA_NEXT:
@@ -77,8 +69,6 @@ public class MusicControlReceiver extends BroadcastReceiver {
             }
         }else {
             //Not from RemoteControlClient, from NotificationPanel
-            deviceId = intent.getStringExtra("deviceId");
-            player = intent.getStringExtra("player");
             String action = intent.getStringExtra("action");
             if (action.equals("play")) {
                 play();
