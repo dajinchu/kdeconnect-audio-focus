@@ -67,7 +67,7 @@ public class RemoteControlClientManager {
             mediaButtonIntent.putExtra("PLAYER", player);
             Log.d("Panel", mediaButtonIntent.getStringExtra("ID") + " " + mediaButtonIntent.getStringExtra("PLAYER"));
             mediaButtonIntent.setComponent(eventReceiver);
-            PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, 0, mediaButtonIntent, 0);
+            PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, 0, mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             remoteControlClient = new RemoteControlClient(mediaPendingIntent);
             audioManager.registerRemoteControlClient(remoteControlClient);
         }
