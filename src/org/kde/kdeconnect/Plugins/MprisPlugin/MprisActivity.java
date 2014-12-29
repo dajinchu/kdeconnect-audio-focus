@@ -169,6 +169,7 @@ public class MprisActivity extends ActionBarActivity {
 
                                         //If there was a panel already, this will override it
                                         nPanel = new NotificationPanel(getApplicationContext(), device, player);
+                                        new RemoteControlClientManager(getApplicationContext(), device, player);
                                     }
 
                                     @Override

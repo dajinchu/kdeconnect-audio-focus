@@ -22,17 +22,12 @@ package org.kde.kdeconnect.Plugins.MprisPlugin;
 import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.media.MediaMetadataRetriever;
-import android.media.RemoteControlClient;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import org.kde.kdeconnect.Device;
@@ -42,8 +37,6 @@ import org.kde.kdeconnect_tp.R;
 public class NotificationPanel {
 
     private static final int notificationId = 182144338; //Random number, fixed id to make sure we don't produce more than one notification
-    private final AudioManager audioManager;
-    private final RemoteControlClient remoteControlClient;
 
     private String deviceId;
     private String player;
@@ -51,7 +44,7 @@ public class NotificationPanel {
     private NotificationManager nManager;
     private NotificationCompat.Builder nBuilder;
     private RemoteViews remoteView;
-    private AudioManager.OnAudioFocusChangeListener listener;
+
 
     @SuppressLint("NewApi")
     public NotificationPanel(Context context, Device device, String player) {
@@ -78,33 +71,6 @@ public class NotificationPanel {
         stackBuilder.addParentStack(MprisActivity.class);
         stackBuilder.addNextIntent(launch);
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        ComponentName eventReceiver = new ComponentName(context.getPackageName(), NotificationReturnSlot.class.getName());
-        audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.registerMediaButtonEventReceiver(eventReceiver);
-        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        Log.d("Panel", deviceId + " " + player);
-        mediaButtonIntent.putExtra("ID", deviceId);
-        mediaButtonIntent.putExtra("PLAYER", player);
-        Log.d("Panel", mediaButtonIntent.getStringExtra("ID") + " " + mediaButtonIntent.getStringExtra("PLAYER"));
-        mediaButtonIntent.setComponent(eventReceiver);
-        PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, NotificationsHelper.getUniqueId(), mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        remoteControlClient = new RemoteControlClient(mediaPendingIntent);
-        remoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-                        | RemoteControlClient.FLAG_KEY_MEDIA_NEXT
-                        | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
-                        | RemoteControlClient.FLAG_KEY_MEDIA_PLAY
-                        | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE
-                        );
-        audioManager.registerRemoteControlClient(remoteControlClient);
-        RemoteControlClient.MetadataEditor metadataEditor = remoteControlClient.editMetadata(true);
-        metadataEditor.putString(MediaMetadataRetriever.METADATA_KEY_ALBUM, "Fantastique");
-        metadataEditor.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, "Raw Stiles");
-        metadataEditor.putString(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST, "Raw Stiles");
-        metadataEditor.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, "Rogue");
-        metadataEditor.apply();
-        remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
-
 
 
         nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -149,19 +115,8 @@ public class NotificationPanel {
         if (remoteView == null) return;
         remoteView.setTextViewText(R.id.notification_song, songName);
         if (isPlaying) {
-            Log.d("Panel", "Playing");
-            listener = new AudioManager.OnAudioFocusChangeListener() {
-                @Override
-                public void onAudioFocusChange(int focusChange) {
-
-                }
-            };
-            audioManager.requestAudioFocus(listener,AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-            remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             remoteView.setImageViewResource(R.id.notification_play_pause, android.R.drawable.ic_media_pause);
         } else {
-            remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
-            audioManager.abandonAudioFocus(listener);
             remoteView.setImageViewResource(R.id.notification_play_pause, android.R.drawable.ic_media_play);
         }
         nBuilder.setContent(remoteView);
