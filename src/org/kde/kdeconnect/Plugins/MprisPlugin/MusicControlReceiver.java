@@ -55,7 +55,10 @@ public class MusicControlReceiver extends BroadcastReceiver {
                         play();
                         break;
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        play();
+                        pause();
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_STOP:
+                        pause();
                         break;
                     case KeyEvent.KEYCODE_MEDIA_NEXT:
                         next();
@@ -82,6 +85,9 @@ public class MusicControlReceiver extends BroadcastReceiver {
 
     public void play(){
         musicCommand("PlayPause");
+    }
+    public void pause() {
+        musicCommand("Pause");
     }
     public void next(){
         musicCommand("Next");
