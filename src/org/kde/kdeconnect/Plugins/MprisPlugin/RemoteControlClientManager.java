@@ -51,6 +51,8 @@ public class RemoteControlClientManager {
 
         audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
 
+        registerRemoteClient();
+
         final MprisPlugin mpris = (MprisPlugin)device.getPlugin("plugin_mpris");
         if (mpris != null) {
             mpris.setPlayerStatusUpdatedHandler("remoteclient", new Handler() {
@@ -65,16 +67,14 @@ public class RemoteControlClientManager {
     }
     private void registerRemoteClient(){
         eventReceiver = new ComponentName(context.getPackageName(), MusicControlReceiver.class.getName());
-        if(remoteControlClient==null) {
-            audioManager.registerMediaButtonEventReceiver(eventReceiver);
-            Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-            mediaButtonIntent.putExtra("deviceId", deviceId);
-            mediaButtonIntent.putExtra("player", player);
-            mediaButtonIntent.setComponent(eventReceiver);
-            PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, 0, mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            remoteControlClient = new RemoteControlClient(mediaPendingIntent);
-            audioManager.registerRemoteControlClient(remoteControlClient);
-        }
+        audioManager.registerMediaButtonEventReceiver(eventReceiver);
+        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        mediaButtonIntent.putExtra("deviceId", deviceId);
+        mediaButtonIntent.putExtra("player", player);
+        mediaButtonIntent.setComponent(eventReceiver);
+        PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, 0, mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        remoteControlClient = new RemoteControlClient(mediaPendingIntent);
+        audioManager.registerRemoteControlClient(remoteControlClient);
         remoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
                         | RemoteControlClient.FLAG_KEY_MEDIA_NEXT
                         | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
@@ -82,28 +82,20 @@ public class RemoteControlClientManager {
                         | RemoteControlClient.FLAG_KEY_MEDIA_PAUSE
         );
     }
-    private void unregisterRemoteClient(){
-        audioManager.unregisterMediaButtonEventReceiver(eventReceiver);
-        audioManager.unregisterRemoteControlClient(remoteControlClient);
-        remoteControlClient=null;
-    }
     private void updateMetadata(){
-        if(remoteControlClient==null){
-            return;
-        }
         RemoteControlClient.MetadataEditor metatdataEditor = remoteControlClient.editMetadata(true);
         metatdataEditor.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, song);
         metatdataEditor.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, player);
         metatdataEditor.apply();
-    };
+    }
     public void updateStatus(String songName, boolean isPlaying){
         song = songName;
         if(isPlaying){
-            registerRemoteClient();
             if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             updateMetadata();
-        }else{if(remoteControlClient!=null)
+        }else{
+            if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
         }
     }
