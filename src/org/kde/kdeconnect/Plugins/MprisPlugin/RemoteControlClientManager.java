@@ -42,6 +42,7 @@ public class RemoteControlClientManager {
     private ComponentName eventReceiver;
     private RemoteControlClient remoteControlClient;
     private AudioManager audioManager;
+    private AudioManager.OnAudioFocusChangeListener focusListener;
     private String song;
 
     public RemoteControlClientManager(Context context, Device device, String player){
@@ -50,6 +51,12 @@ public class RemoteControlClientManager {
         this.player = player;
 
         audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+        focusListener = new AudioManager.OnAudioFocusChangeListener() {
+            @Override
+            public void onAudioFocusChange(int focusChange) {
+
+            }
+        };
 
         registerRemoteClient();
 
@@ -91,10 +98,12 @@ public class RemoteControlClientManager {
     public void updateStatus(String songName, boolean isPlaying){
         song = songName;
         if(isPlaying){
+            audioManager.requestAudioFocus(focusListener,AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             updateMetadata();
         }else{
+            audioManager.abandonAudioFocus(focusListener);
             if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
         }
