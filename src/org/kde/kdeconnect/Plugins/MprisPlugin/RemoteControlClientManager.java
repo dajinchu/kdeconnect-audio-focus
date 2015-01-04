@@ -98,6 +98,7 @@ public class RemoteControlClientManager {
     public void updateStatus(String songName, boolean isPlaying){
         song = songName;
         if(isPlaying){
+            registerRemoteClient();
             audioManager.requestAudioFocus(focusListener,AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
