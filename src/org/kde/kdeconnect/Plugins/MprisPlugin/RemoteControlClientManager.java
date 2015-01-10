@@ -19,7 +19,7 @@
 */
 package org.kde.kdeconnect.Plugins.MprisPlugin;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,7 +32,7 @@ import android.os.Message;
 
 import org.kde.kdeconnect.Device;
 
-@SuppressLint("NewApi")
+@TargetApi(14)
 public class RemoteControlClientManager {
 
 
@@ -40,7 +40,7 @@ public class RemoteControlClientManager {
     private final String player;
     private final Context context;
     private ComponentName eventReceiver;
-    private RemoteControlClient remoteControlClient;
+    private RemoteControlClientCompat remoteControlClient;
     private AudioManager audioManager;
     private AudioManager.OnAudioFocusChangeListener focusListener;
     private String song;
@@ -80,8 +80,8 @@ public class RemoteControlClientManager {
         mediaButtonIntent.putExtra("player", player);
         mediaButtonIntent.setComponent(eventReceiver);
         PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(context, 0, mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        remoteControlClient = new RemoteControlClient(mediaPendingIntent);
-        audioManager.registerRemoteControlClient(remoteControlClient);
+        remoteControlClient = new RemoteControlClientCompat(mediaPendingIntent);
+        RemoteControlHelper.registerRemoteControlClient(audioManager, remoteControlClient);
         remoteControlClient.setTransportControlFlags(RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
                         | RemoteControlClient.FLAG_KEY_MEDIA_NEXT
                         | RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
@@ -90,16 +90,16 @@ public class RemoteControlClientManager {
         );
     }
     private void updateMetadata(){
-        RemoteControlClient.MetadataEditor metatdataEditor = remoteControlClient.editMetadata(true);
-        metatdataEditor.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, song);
-        metatdataEditor.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, player);
-        metatdataEditor.apply();
+        remoteControlClient.editMetadata(true)
+                .putString(MediaMetadataRetriever.METADATA_KEY_TITLE, song)
+                .putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, player)
+                .apply();
     }
     public void updateStatus(String songName, boolean isPlaying){
         song = songName;
         if(isPlaying){
             registerRemoteClient();
-            audioManager.requestAudioFocus(focusListener,AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            audioManager.requestAudioFocus(focusListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             if(remoteControlClient!=null)
                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
             updateMetadata();
