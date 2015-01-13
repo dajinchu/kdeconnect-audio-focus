@@ -52,6 +52,7 @@ public class MprisActivity extends ActionBarActivity {
     private Runnable positionSeekUpdateRunnable = null;
     private NotificationPanel nPanel = null;
     private String targetPlayer = null;
+    private RemoteControlClientManager remoteControlManager;
 
     private static String milisToProgress(long milis) {
         int length = (int)(milis / 1000); //From milis to seconds
@@ -169,7 +170,7 @@ public class MprisActivity extends ActionBarActivity {
 
                                         //If there was a panel already, this will override it
                                         nPanel = new NotificationPanel(getApplicationContext(), device, player);
-                                        new RemoteControlClientManager(getApplicationContext(), device, player);
+                                        remoteControlManager = new RemoteControlClientManager(getApplicationContext(), device, player);
                                     }
 
                                     @Override
@@ -209,7 +210,8 @@ public class MprisActivity extends ActionBarActivity {
 
         @Override
         public void onConnectionLost(BaseLink link) {
-
+            nPanel.dismiss();
+            remoteControlManager.unregisterRemoteClient();
         }
     };
 

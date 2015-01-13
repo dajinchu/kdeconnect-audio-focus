@@ -95,6 +95,11 @@ public class RemoteControlClientManager {
                 .putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, player)
                 .apply();
     }
+    public void unregisterRemoteClient() {
+         audioManager.unregisterMediaButtonEventReceiver(eventReceiver);
+         RemoteControlHelper.unregisterRemoteControlClient(audioManager, remoteControlClient);
+         remoteControlClient = null;
+    }
     public void updateStatus(String songName, boolean isPlaying){
         song = songName;
         if(isPlaying){
